@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::fs;
 use std::io::{BufRead, BufReader};
 // This code presents one solution to the 2015 advent of code problem from day 1: Santa and floor directions
@@ -7,11 +6,10 @@ use std::io::{BufRead, BufReader};
 fn main() {
 
     //We read in as text because copy and paste is broken for large input sometimes. 
-    //Process: Read in string, parse to characters, make a hashmap of characters
-    //Floor increments are then just the character counts in the hashmap. Add and subtract as needed + print
+    //Process: Read in string, parse to characters, iterate through to find when we enter the basement. 
+    //Lets try an enum with the char iterable!
 
     let mut curr_floor: i32 = 0;
-    let mut letter_counts: HashMap<char,i32> = HashMap::new();
 
     let path = "./input.txt";
     let file = match fs::File::open(path) {
@@ -21,23 +19,18 @@ fn main() {
     let buffer = BufReader::new(file);   
     let directions = get_directions(buffer);
 
-    let char_vec: Vec<char> = directions.to_lowercase().chars().collect();
-
-    for c in char_vec {
-        *letter_counts.entry(c).or_insert(0) += 1;
+    for (i, c) in directions.chars().enumerate() {
+        if c == '(' {
+            curr_floor += 1;
+        }
+        if c == ')' {
+            curr_floor -= 1;
+        }
+        if curr_floor < 0 {
+            println!("{}",i+1);
+            break;
+        }
     }
-
-    let open_exists = letter_counts.contains_key(&'(');
-    let close_exists = letter_counts.contains_key(&')');
-
-    if open_exists {
-        curr_floor += letter_counts[&'('];
-    }
-    if close_exists {
-        curr_floor -= letter_counts[&')'];
-    }
-
-    println!("floor {}",curr_floor);
 }
 
 fn get_directions<R>(mut rdr: R) -> String
